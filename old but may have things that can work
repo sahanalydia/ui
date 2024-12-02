@@ -1,0 +1,91 @@
+# Setup the Pygame window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Meditation App")
+
+# Load background GIF
+def load_background():
+    try:
+        response = requests.get(background_gif_url)
+        response.raise_for_status()
+        if 'image' in response.headers['Content-Type']:
+            img = Image.open(BytesIO(response.content))
+            img = img.convert("RGB")
+            img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+            img = pygame.transform.scale(img, (WIDTH, HEIGHT))
+            return img
+    except Exception as e:
+        print(f"Error loading background image: {e}")
+    return pygame.Surface((WIDTH, HEIGHT))  # Return empty surface if fails
+
+# Function to display text on the screen
+def display_text(text, x, y, size=FONT_SIZE, color=BLACK):
+    font = pygame.font.SysFont('Arial', size)
+    label = font.render(text, True, color)
+    screen.blit(label, (x, y))
+
+# Function to load audio from URL
+def load_audio():
+    audio_url = random.choice(audio_urls)
+    try:
+        response = requests.get(audio_url)
+        response.raise_for_status()
+        pygame.mixer.music.load(BytesIO(response.content))
+    except Exception as e:
+        print(f"Error loading audio: {e}")
+
+# Timer for meditation
+class Timer:
+    def __init__(self, duration, meditation_type):
+        self.duration = duration
+        self.time_left = duration
+        self.meditation_type = meditation_type
+
+    def start(self):
+        load_audio()  # Start the meditation audio
+
+def plot_mood():
+    moods = [int(entry['mood']) for entry in journals]
+    if moods:
+        plt.plot(moods)
+        plt.title("Mood Tracking Over Time")
+        plt.xlabel("Days")
+        plt.ylabel("Mood (1-10)")
+        plt.show()
+# Function to process the mood input
+def process_mood_input():
+    global current_mood, current_feelings
+    current_mood = ""  # Reset inputs
+    current_feelings = ""
+    running = True
+    mood_input_box, feelings_input_box = handle_mood_input()
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # On press of Enter, save the entry
+                    add_journal_entry(current_mood, current_feelings)
+                    running = False
+                elif event.key == pygame.K_BACKSPACE:
+                    if mood_input_box.collidepoint(pygame.mouse.get_pos()):
+                        current_mood = current_mood[:-1]
+                    elif feelings_input_box.collidepoint(pygame.mouse.get_pos()):
+                        current_feelings = current_feelings[:-1]
+                else:
+                    if mood_input_box.collidepoint(pygame.mouse.get_pos()):
+                        current_mood += event.unicode
+                    elif feelings_input_box.collidepoint(pygame.mouse.get_pos()):
+                        current_feelings += event.unicode
+                handle_mood_input()  # Refresh screen with the new input
+
+import pygame
+import random
+import time
+import os
+import datetime
+import requests
+from io import BytesIO
+from PIL import Image
+import matplotlib.pyplot as plt
