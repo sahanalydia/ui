@@ -1,0 +1,191 @@
+from random import randint
+from cmu_graphics import *
+import math
+
+# Constants
+WIDTH, HEIGHT = 1200, 800
+WAVE_COUNT = 7
+WAVE_SPEED = 2
+WAVE_HEIGHT = 30
+WAVE_SPACING = 40
+WAVE_COLORS = [
+    (70, 130, 180), (95, 158, 160), (100, 180, 200),
+    (135, 206, 235), (176, 224, 230), (173, 216, 230), (200, 240, 255)
+]
+BUTTON_WIDTH, BUTTON_HEIGHT = 200, 50
+BEACH_HEIGHT = 150
+STARFISH_COUNT = 8
+STARFISH_COLORS = ["orange", "yellow", "red", "pink"]
+SKY_GRADIENT = [(135, 206, 235), (173, 216, 230)]
+MOOD_DATA = [6, 7, 8, 5, 9]  # Example mood data for graphs
+
+# Globals
+wave_offsets = [i * 60 for i in range(WAVE_COUNT)]
+starfish_positions = []
+current_screen = "menu"
+affirmations = [
+    "You are calm and centered.",
+    "Breathe deeply; you are at peace.",
+    "You are capable of achieving great things."
+]
+hours_meditated = 12.5  # Example value for hours meditated
+word_frequency = {"peace": 10, "calm": 8, "focus": 5}  # Example word frequency
+
+
+# Initialize starfish positions
+def initialize_starfish_positions():
+    """Randomly position starfish on the beach."""
+    global starfish_positions
+    starfish_positions = [
+        (randint(50, WIDTH - 50), HEIGHT - BEACH_HEIGHT + randint(-10, 10), STARFISH_COLORS[i % len(STARFISH_COLORS)])
+        for i in range(STARFISH_COUNT)
+    ]
+
+# Helper Functions
+def draw_gradient_background():
+    """Draw a blended gradient background for the sky."""
+    for i in range(HEIGHT - BEACH_HEIGHT):
+        ratio = i / (HEIGHT - BEACH_HEIGHT)
+        r1, g1, b1 = SKY_GRADIENT[0]
+        r2, g2, b2 = SKY_GRADIENT[1]
+        blended_color = rgb(
+            int(r1 * (1 - ratio) + r2 * ratio),
+            int(g1 * (1 - ratio) + g2 * ratio),
+            int(b1 * (1 - ratio) + b2 * ratio),
+        )
+        drawLine(0, i, WIDTH, i, fill=blended_color)
+
+def update_waves():
+    """Update wave offsets for animation."""
+    for i in range(len(wave_offsets)):
+        wave_offsets[i] += WAVE_SPEED
+        if wave_offsets[i] >= 360:
+            wave_offsets[i] -= 360
+
+def draw_waves():
+    """Draw smooth animated waves."""
+    for layer, offset in enumerate(wave_offsets):
+        color = rgb(*WAVE_COLORS[layer % len(WAVE_COLORS)])
+        for x in range(-50, WIDTH + 50, 50):
+            y = HEIGHT - BEACH_HEIGHT - layer * WAVE_SPACING + math.sin(math.radians(x + offset)) * WAVE_HEIGHT
+            drawCircle(x, y, 30, fill=color, border=None)
+
+def draw_beach():
+    """Draw the static beach at the bottom with starfish."""
+    drawRect(0, HEIGHT - BEACH_HEIGHT, WIDTH, BEACH_HEIGHT, fill="sandybrown")
+    for x, y, color in starfish_positions:
+        draw_starfish(x, y, 20, color)
+
+def draw_starfish(x, y, size, color):
+    """Draw a starfish without a border."""
+    points = [
+        (x, y - size),
+        (x + size * 0.3, y - size * 0.3),
+        (x + size, y - size * 0.3),
+        (x + size * 0.4, y + size * 0.1),
+        (x + size * 0.5, y + size),
+        (x, y + size * 0.5),
+        (x - size * 0.5, y + size),
+        (x - size * 0.4, y + size * 0.1),
+        (x - size, y - size * 0.3),
+        (x - size * 0.3, y - size * 0.3),
+    ]
+    drawPolygon(*sum(points, ()), fill=color, border=None)
+
+def draw_menu():
+    """Draw the main menu with light blue buttons."""
+    drawLabel("Welcome to the Meditation App", WIDTH // 2, 50, size=36, fill="black", bold=True)
+    
+    # Meditation button
+    drawRect(100, 150, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Meditate", 200, 175, size=24)
+    
+    # Journal button
+    drawRect(100, 225, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Journal", 200, 250, size=24)
+    
+    # Mood Graph button
+    drawRect(100, 300, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Mood Graph", 200, 325, size=24)
+    
+    # Hours Meditated button
+    drawRect(100, 375, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Hours Meditated", 200, 400, size=24)
+    
+    # Affirmations button
+    drawRect(100, 450, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Affirmations", 200, 475, size=24)
+    
+    # Most Frequent Words button
+    drawRect(100, 525, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
+    drawLabel("Word Cloud", 200, 550, size=24)
+
+def draw_affirmation_screen():
+    """Draw the affirmations screen."""
+    drawLabel("Affirmation:", WIDTH // 2, HEIGHT // 2 - 50, size=36, fill="black")
+    drawLabel(random.choice(affirmations), WIDTH // 2, HEIGHT // 2, size=24, fill="darkblue")
+
+def draw_hours_meditated_screen():
+    """Display hours meditated."""
+    drawLabel(f"Total Hours Meditated: {hours_meditated:.1f}", WIDTH // 2, HEIGHT // 2, size=36, fill="black")
+
+def draw_mood_graph_screen():
+    """Display a simple mood graph."""
+    drawLabel("Mood Trends", WIDTH // 2, 100, size=36, fill="black")
+    for i, mood in enumerate(MOOD_DATA):
+        drawCircle(200 + i * 100, HEIGHT - 100 - mood * 30, 10, fill="blue")
+        if i > 0:
+            prev_x, prev_y = 200 + (i - 1) * 100, HEIGHT - 100 - MOOD_DATA[i - 1] * 30
+            drawLine(prev_x, prev_y, 200 + i * 100, HEIGHT - 100 - mood * 30, fill="blue")
+
+def draw_word_cloud_screen():
+    """Display most frequent words."""
+    drawLabel("Most Frequent Words", WIDTH // 2, 100, size=36, fill="black")
+    for i, (word, count) in enumerate(word_frequency.items()):
+        drawLabel(f"{word}: {count}", WIDTH // 2, 150 + i * 30, size=24, fill="darkgreen")
+
+# Event Handlers
+def onAppStart(app):
+    """Initialize the app."""
+    app.current_screen = "menu"
+    initialize_starfish_positions()
+
+def onStep(app):
+    """Update wave animations."""
+    update_waves()
+
+def onMousePress(app, mouseX, mouseY):
+    """Handle button navigation."""
+    if app.current_screen == "menu":
+        if 100 < mouseX < 300:
+            if 150 < mouseY < 200:
+                app.current_screen = "meditate"
+            elif 225 < mouseY < 275:
+                app.current_screen = "journal"
+            elif 300 < mouseY < 350:
+                app.current_screen = "mood_graph"
+            elif 375 < mouseY < 425:
+                app.current_screen = "hours_meditated"
+            elif 450 < mouseY < 500:
+                app.current_screen = "affirmations"
+            elif 525 < mouseY < 575:
+                app.current_screen = "word_cloud"
+
+def redrawAll(app):
+    """Draw the entire screen."""
+    draw_gradient_background()
+    draw_waves()
+    draw_beach()
+    if app.current_screen == "menu":
+        draw_menu()
+    elif app.current_screen == "affirmations":
+        draw_affirmation_screen()
+    elif app.current_screen == "hours_meditated":
+        draw_hours_meditated_screen()
+    elif app.current_screen == "mood_graph":
+        draw_mood_graph_screen()
+    elif app.current_screen == "word_cloud":
+        draw_word_cloud_screen()
+
+# Run the app
+runApp(width=WIDTH, height=HEIGHT)
