@@ -26,56 +26,46 @@ STARFISH_COLORS = ["orange", "yellow", "red", "pink"]
 SKY_GRADIENT = [(135, 206, 235), (173, 216, 230)]
 MOOD_DATA = [6, 7, 8, 5, 9]  # Example mood data for graphs
 
-# Globals
+
 wave_offsets = [i * 60 for i in range(WAVE_COUNT)]
 starfish_positions = []
 current_screen = "menu"
 affirmations = [
-    # Calm and Peace
     "I am calm, centered, and in control of my emotions.",
     "Each deep breath brings me closer to inner peace.",
     "I am safe, I am calm, and I trust the journey.",
 
-    # Gratitude
     "I am grateful for the good things in my life.",
     "Every day, I find reasons to be thankful.",
     "Gratitude fills my heart and uplifts my spirit.",
 
-    # Self-Love
     "I am worthy of love and kindness.",
     "I accept myself just as I am.",
     "My body, mind, and spirit deserve respect and care.",
 
-    # Motivation and Growth
     "I am capable of achieving my goals.",
     "Each day, I am improving and growing.",
     "I am resilient, strong, and brave.",
 
-    # Stress Relief
     "I release all tension and embrace relaxation.",
     "I let go of what I cannot control.",
     "I deserve rest and renewal.",
 
-    # Focus and Clarity
     "My mind is clear, and I am focused on my purpose.",
     "I trust my intuition to guide me.",
     "I approach challenges with confidence and clarity.",
 
-    # Healing
     "I am healing, and every cell in my body is working for my health.",
     "I let go of past hurts and embrace the present moment.",
 
-    # Abundance
     "I attract positivity, abundance, and joy.",
     "Opportunities flow into my life effortlessly.",
     "I am open to receiving all the good the universe has to offer.",
 
-    # Relationships
     "I nurture meaningful and supportive relationships.",
     "I am surrounded by love and positive energy.",
     "I communicate with clarity and compassion.",
 
-    # Empowerment
     "I am powerful, and I create the life I want.",
     "I trust in my ability to overcome challenges.",
     "I am proud of the progress I’ve made."
@@ -83,7 +73,6 @@ affirmations = [
 word_frequency = {"peace": 10, "calm": 8, "focus": 5}  # Example word frequency
 
 
-# Initialize starfish positions
 def initialize_starfish_positions():
     """Randomly position starfish on the beach."""
     global starfish_positions
@@ -92,10 +81,8 @@ def initialize_starfish_positions():
         for i in range(STARFISH_COUNT)
     ]
 
-# Helper Functions
 def draw_gradient_background(app):
 
-    """Draw a blended gradient background for the sky."""
     gradient = [(25, 25, 112), (70, 130, 180)] if app.night_mode else SKY_GRADIENT
     
     for i in range(HEIGHT - BEACH_HEIGHT):
@@ -111,14 +98,12 @@ def draw_gradient_background(app):
 
 
 def update_waves():
-    """Update wave offsets for animation."""
     for i in range(len(wave_offsets)):
         wave_offsets[i] += WAVE_SPEED
         if wave_offsets[i] >= 360:
             wave_offsets[i] -= 360
 
 def draw_waves():
-    """Draw smooth animated waves."""
     for layer, offset in enumerate(wave_offsets):
         color = rgb(*WAVE_COLORS[layer % len(WAVE_COLORS)])
         for x in range(-50, WIDTH + 50, 50):
@@ -126,13 +111,12 @@ def draw_waves():
             drawCircle(x, y, 30, fill=color, border=None)
 
 def draw_beach():
-    """Draw the static beach at the bottom with starfish."""
+
     drawRect(0, HEIGHT - BEACH_HEIGHT, WIDTH, BEACH_HEIGHT, fill="sandybrown")
     for x, y, color in starfish_positions:
         draw_starfish(x, y, 20, color)
 
 def draw_starfish(x, y, size, color):
-    """Draw a starfish without a border."""
     points = [
         (x, y - size),
         (x + size * 0.3, y - size * 0.3),
@@ -148,7 +132,6 @@ def draw_starfish(x, y, size, color):
     drawPolygon(*sum(points, ()), fill=color, border=None)
 
 def draw_menu(app):
-    """Draw the main menu with light blue buttons."""
     drawLabel("Welcome to the Meditation App", WIDTH // 2, 50, size=36, fill="black", bold=True)
     
     # Meditation button
@@ -192,39 +175,30 @@ def draw_menu(app):
 
 
 def draw_hours_meditated_screen(app):
-    """Display hours meditated."""
     drawLabel(f"Total Hours Meditated: {hours_meditated:.1f}", WIDTH // 2, HEIGHT // 2, size=36, fill="black")
     
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
-
-
 def calculate_word_frequency():
-    """Calculate the most frequent words from journal feelings."""
     global word_frequency
     word_frequency.clear()
     for entry in journal_entries:
         for word in entry["feelings"].lower().split():
-            # Remove punctuation clean up the word
             word = ''.join(c for c in word if c.isalnum())
             if word:
                 word_frequency[word] = word_frequency.get(word, 0) + 1
 
 
-# Globals for Journaling
 journal_entries = []  # {date, mood, feelings}
 
 def add_journal_entry(mood, feelings):
-    """Add a journal entry."""
     global journal_entries
     current_date = time.strftime("%Y-%m-%d")  # Get the current date
     entry = {"date": current_date, "mood": mood, "feelings": feelings}
     journal_entries.append(entry)
 
 def view_journal_entries():
-    """Display journal entries."""
     drawLabel("Journal Entries", WIDTH // 2, 100, size=36, fill="black")
     y_offset = 150
     for entry in journal_entries:
@@ -233,26 +207,21 @@ def view_journal_entries():
         feelings = entry["feelings"]
         drawLabel(f"{date}: Mood {mood}, Feelings: {feelings}", WIDTH // 2, y_offset, size=18, fill="darkblue")
         y_offset += 30
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
 def draw_word_cloud_screen(app):
-    """Display most frequent words."""
+
     drawLabel("Most Frequent Words", WIDTH // 2, 100, size=36, fill="black")
     calculate_word_frequency()
     sorted_words = sorted(word_frequency.items(), key=lambda x: -x[1])
     for i, (word, count) in enumerate(sorted_words[:10]):  # Top 10 words
         drawLabel(f"{word}: {count}", WIDTH // 2, 150 + i * 30, size=24, fill="darkgreen")
     
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
-
-# Event Handlers
 def onAppStart(app):
-    """Initialize the app."""
     app.current_screen = "menu"  # default screen
     initialize_starfish_positions()
     app.inputs = {"mood": "", "feelings": ""}
@@ -306,7 +275,6 @@ def onMousePress(app, mouseX, mouseY):
 
     print(f"Mouse pressed at: {mouseX}, {mouseY}")
 
-    """Handle button clicks for navigation and actions."""
     global current_screen, current_meditation_duration, pomodoro_start_time
 
     if app.current_screen == "pomodoro":
@@ -318,12 +286,11 @@ def onMousePress(app, mouseX, mouseY):
         elif 700 < mouseX < 900 and 400 < mouseY < 450:  # Stop Button
             app.timer_active = False  # Deactivate the timer
             app.pomodoro_start_time = None  # Reset the start time
-    # Back Button 
+
     if 50 < mouseX < 200 and 50 < mouseY < 100:
         if app.current_screen != "menu":  
             app.current_screen = "menu"
 
-    # Menu Screen Navigation
     if app.current_screen == "menu":
         if 100 < mouseX < 300:
             if 150 < mouseY < 200:
@@ -347,7 +314,6 @@ def onMousePress(app, mouseX, mouseY):
             elif 100 < mouseX < 300 and 700 < mouseY < 750:  # Set Goal Button
                 app.current_screen = "goal_setting"
 
-    # Meditation Screen Logic
     elif app.current_screen == "meditate":
         if 400 < mouseX < 600:
             if 200 < mouseY < 250:
@@ -360,34 +326,28 @@ def onMousePress(app, mouseX, mouseY):
             stop_meditation()
 
 
-    # Mood Graph Screen Logic
     elif app.current_screen == "mood_graph":
         if 50 < mouseX < 200 and 50 < mouseY < 100:  # Back button
             app.current_screen = "menu"
 
-    # Hours Meditated Screen Logic
     elif app.current_screen == "hours_meditated":
         if 50 < mouseX < 200 and 50 < mouseY < 100:  # Back button
             app.current_screen = "menu"
 
-    # Affirmations Screen Logic
     elif app.current_screen == "affirmations":
         if 400 < mouseX < 600 and 500 < mouseY < 550:  # Change Affirmation Button
             app.current_affirmation = random.choice(affirmations)
         elif 50 < mouseX < 200 and 50 < mouseY < 100:  # Back button
             app.current_screen = "menu"
 
-    # Word Cloud Screen Logic
     elif app.current_screen == "word_cloud":
         if 50 < mouseX < 200 and 50 < mouseY < 100:  # Back button
             app.current_screen = "menu"
 
-    # Calendar Screen Logic
     elif app.current_screen == "calendar":
         if 50 < mouseX < 200 and 50 < mouseY < 100:  # Back button
             app.current_screen = "menu"
 
-    # Pomodoro Timer Screen Logic
     elif app.current_screen == "pomodoro":
         if 400 < mouseX < 600 and 400 < mouseY < 450:  # Start
             app.work_time = 25 * 60
@@ -401,13 +361,12 @@ def onMousePress(app, mouseX, mouseY):
     if 1000 < mouseX < 1150 and 50 < mouseY < 100:
         app.night_mode = not app.night_mode
 
-   # Fix input box logic in Mouse Press
     elif app.current_screen == "journal":
-        if 300 < mouseX < 900 and 200 < mouseY < 250:  # Mood Input Box
+        if 300 < mouseX < 900 and 200 < mouseY < 250:  
             app.active_input = "mood"
-        elif 300 < mouseX < 900 and 300 < mouseY < 350:  # Feelings Input Box
+        elif 300 < mouseX < 900 and 300 < mouseY < 350:  
             app.active_input = "feelings"
-        elif 500 < mouseX < 700 and 400 < mouseY < 450:  # Save Button
+        elif 500 < mouseX < 700 and 400 < mouseY < 450:  
             mood = app.inputs["mood"].strip()
             feelings = app.inputs["feelings"].strip()
             if mood.isdigit() and 1 <= int(mood) <= 10 and feelings:
@@ -432,22 +391,21 @@ def onMousePress(app, mouseX, mouseY):
 
 
 def draw_view_journal_screen():
-    """Draw the screen to view journal entries."""
+
     drawLabel("Journal Entries", WIDTH // 2, 100, size=36, fill="black", bold=True)
     y = 150
     for entry in journal_entries:
         drawLabel(f"{entry['date']} - Mood: {entry['mood']} - {entry['feelings']}", WIDTH // 2, y, size=18, fill="black")
         y += 30
-    # Back Button
+
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
     
 
 def draw_meditation_screen(app):
-    """Draw the meditation screen with durations and timer."""
+
     drawLabel("Select Meditation Duration", WIDTH // 2, 100, size=36, fill="black", bold=True)
     
-    #  durations
     drawRect(400, 200, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
     drawLabel("5 Minutes", 500, 225, size=24)
     
@@ -457,7 +415,6 @@ def draw_meditation_screen(app):
     drawRect(400, 400, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
     drawLabel("20 Minutes", 500, 425, size=24)
     
-    # Start/Stop 
     drawRect(400, 500, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightgreen", border="black")
     drawLabel("Start", 500, 525, size=24)
     
@@ -467,7 +424,6 @@ def draw_meditation_screen(app):
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
-    # Display Timer
     if meditation_started:
         minutes = meditation_timer // 60
         seconds = meditation_timer % 60
@@ -489,7 +445,6 @@ def draw_calendar_screen(app):
     drawLabel("Back", 125, 75, size=24, fill="black")
 
 def redrawAll(app):
-    """Handle the screen rendering based on the current screen."""
     draw_gradient_background(app)
     draw_waves()
     draw_beach()
@@ -514,15 +469,12 @@ def redrawAll(app):
         draw_pomodoro_screen(app)
 
 def draw_affirmation_screen(app):
-    """Draw the affirmations screen."""
     drawLabel("Affirmation:", WIDTH // 2, HEIGHT // 2 - 100, size=36, fill="black")
     drawLabel(app.current_affirmation, WIDTH // 2, HEIGHT // 2, size=24, fill="darkblue")
     
-    # Affirmation Button
     drawRect(400, 500, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightblue", border="black")
     drawLabel("New Affirmation", 500, 525, size=24, fill="black")
     
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
@@ -534,20 +486,17 @@ def toggle_night_mode(app):
         drawLabel("Night Mode", 1075, 75, size=18, fill="black")
 
 
-# Global Meditation
 meditation_timer = 0
 meditation_started = False
 current_meditation_duration = 0
 meditation_audio_url = None
 
 
-def start_meditation(duration):
     global meditation_timer, meditation_started, current_meditation_duration
     meditation_timer = duration * 60
     meditation_started = True
     current_meditation_duration = duration
 
-    # Use CMU Graphics sound API
     if duration == 5:
         app.meditation_audio = Sound('https://s3.amazonaws.com/cmu-cs-academy.lib.prod/sounds/Drum1.mp3')
     elif duration == 10:
@@ -604,19 +553,15 @@ def draw_journal_screen(app):
     drawRect(500, 400, BUTTON_WIDTH, BUTTON_HEIGHT, fill="lightgreen", border="black")
     drawLabel("Save Entry", 600, 425, size=24)
 
-    # Error message
     if app.error_message:
         drawLabel(app.error_message, WIDTH // 2, 500, size=20, fill="red")
 
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24)
 
-# Global Mood Tracking
 mood_graph_data = []  # graph
 
 def draw_mood_graph_screen(app):
-    """Display a mood graph"""
     drawLabel("Mood Tracker", WIDTH // 2, 100, size=36, fill="black")
     
     if len(mood_graph_data) > 1:
@@ -628,7 +573,6 @@ def draw_mood_graph_screen(app):
     else:
         drawLabel("No data available yet. Add journal entries.", WIDTH // 2, HEIGHT // 2, size=24, fill="red")
     
-    # Back Button
     drawRect(50, 50, 150, 50, fill="lightgrey", border="black")
     drawLabel("Back", 125, 75, size=24, fill="black")
 
@@ -647,7 +591,6 @@ def check_daily_goal():
         app.daily_goal_reached = True
         drawLabel(f"Daily Goal of {app.daily_goal} Minutes Reached!", WIDTH // 2, HEIGHT // 2, size=36, fill="green")
 
-# Goal Setting Screen
 def draw_goal_setting_screen(app):
     drawLabel("Set Daily Meditation Goal (minutes):", WIDTH // 2, 100, size=24, fill="black")
     drawRect(400, 200, 400, 50, fill="lightyellow", border="black")
